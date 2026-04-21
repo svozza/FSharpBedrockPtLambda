@@ -136,13 +136,18 @@ Bundles the Lambda locally via `dotnet publish`. No Docker required.
 ## Test
 
 ```bash
-curl -X POST "$API_URL/items" \
+API_URL=$(aws cloudformation describe-stacks \
+  --stack-name FSharpBedrockPtLambdaStack \
+  --query 'Stacks[0].Outputs[?OutputKey==`ApiUrl`].OutputValue' \
+  --output text --profile <your-profile>)
+
+curl -X POST "${API_URL}items" \
   -H "Content-Type: application/json" \
   -d '{"name":"Test","description":"Hello from F#"}'
 
-curl "$API_URL/items"
+curl "${API_URL}items"
 
-curl "$API_URL/items/<id>"
+curl "${API_URL}items/<id>"
 ```
 
 ## Teardown
