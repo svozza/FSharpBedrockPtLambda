@@ -23,6 +23,9 @@ type Handler() =
             Body = body
         )
 
+    let jsonResponse statusCode msg =
+        response statusCode (JsonSerializer.Serialize({| message = msg |}, jsonOptions))
+
     let handleGet (request: APIGatewayProxyRequest) =
         async {
             match request.PathParameters
@@ -33,7 +36,7 @@ type Handler() =
                 let! item = DynamoDb.getItem client tableName id
                 match item with
                 | Some i -> return response 200 (JsonSerializer.Serialize(i, jsonOptions))
-                | None -> return response 404 """{"message":"Item not found"}"""
+                | None -> return jsonResponse 404 "Item not found"
             | None ->
                 let! items = DynamoDb.getAllItems client tableName
                 return response 200 (JsonSerializer.Serialize(items, jsonOptions))
@@ -57,7 +60,7 @@ type Handler() =
         match request.HttpMethod.ToUpperInvariant() with
         | "GET" -> handleGet request
         | "POST" -> handlePost request
-        | m -> async { return response 405 (sprintf """{"message":"Method %s not allowed"}""" m) }
+        | m -> async { return jsonResponse 405 $"Method {m} not allowed" }
 
     member _.FunctionHandler(request: APIGatewayProxyRequest, _context: ILambdaContext) : APIGatewayProxyResponse =
         try
@@ -68,6 +71,6 @@ type Handler() =
                 |> Async.RunSynchronously
             with ex ->
                 Logger.LogError($"Unhandled exception: {ex.Message}")
-                response 500 """{"message":"Internal server error"}"""
+                jsonResponse 500 "Internal server error"
         finally
             Powertools.flushMetrics ()
