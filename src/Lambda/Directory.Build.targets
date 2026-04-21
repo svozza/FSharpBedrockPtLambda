@@ -1,0 +1,7 @@
+<Project>
+  <!-- Powertools 3.x injects .g.cs auto-initializer files via MSBuild targets.
+       The F# compiler rejects .cs files, so we override the targets with no-ops. -->
+  <Target Name="InjectLoggingAutoInitializer" />
+  <Target Name="InjectMetricsAutoInitializer" />
+  <Target Name="InjectTracingAutoInitializer" />
+</Project>

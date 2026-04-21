@@ -1,0 +1,21 @@
+{
+  "name": "fsharp-bedrock-pt-lambda-infra",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "cdk": "cdk",
+    "synth": "cdk synth",
+    "deploy": "cdk deploy --profile perspective-svozza",
+    "destroy": "cdk destroy --profile perspective-svozza",
+    "diff": "cdk diff --profile perspective-svozza"
+  },
+  "devDependencies": {
+    "aws-cdk": "2.x",
+    "aws-cdk-lib": "2.x",
+    "constructs": "^10.0.0",
+    "ts-node": "^10.0.0",
+    "@types/node": "^22.0.0",
+    "typescript": "~5.8"
+  }
+}
