@@ -3,6 +3,7 @@ namespace FSharpBedrockPtLambda
 open System
 open System.Text.Json
 open Amazon.DynamoDBv2
+open Amazon.DynamoDBv2.DataModel
 open Amazon.Lambda.Core
 open Amazon.Lambda.APIGatewayEvents
 open AWS.Lambda.Powertools.Logging
@@ -14,6 +15,7 @@ do ()
 type Handler() =
     let client = new AmazonDynamoDBClient()
     let tableName = Environment.GetEnvironmentVariable("TABLE_NAME")
+    let context = DynamoDBContextBuilder().WithDynamoDBClient(fun () -> client).Build()
     let jsonOptions = JsonSerializerOptions(PropertyNamingPolicy = JsonNamingPolicy.CamelCase)
 
     let response statusCode body =
@@ -33,12 +35,12 @@ type Handler() =
                   |> Option.bind (fun p -> if p.ContainsKey("id") then Some p["id"] else None)
             with
             | Some id ->
-                let! item = DynamoDb.getItem client tableName id
+                let! item = DynamoDb.getItem context tableName id
                 match item with
                 | Some i -> return response 200 (JsonSerializer.Serialize(i, jsonOptions))
                 | None -> return jsonResponse 404 "Item not found"
             | None ->
-                let! items = DynamoDb.getAllItems client tableName
+                let! items = DynamoDb.getAllItems context tableName
                 return response 200 (JsonSerializer.Serialize(items, jsonOptions))
         }
 
@@ -52,7 +54,7 @@ type Handler() =
                 else
                     item
 
-            do! DynamoDb.putItem client tableName itemWithId
+            do! DynamoDb.putItem context tableName itemWithId
             return response 201 (JsonSerializer.Serialize(itemWithId, jsonOptions))
         }
 
